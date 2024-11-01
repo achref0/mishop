@@ -70,7 +70,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
       <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 shadow-sm">
         <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Stylish Shopping</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">MiShop</h1>
           <AuthButton
             isAuthenticated={isAuthenticated}
             onSignInClick={handleSignIn}
