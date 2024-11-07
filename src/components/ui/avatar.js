@@ -1,24 +1,17 @@
 import React from 'react';
 
-export function Avatar({ children, className = '', ...props }) {
-  return (
-    <div
-      className={`w-10 h-10 rounded-full overflow-hidden bg-gray-200 ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
+export function Avatar({ src, alt, size = 'md' }) {
+  const sizeClasses = {
+    sm: 'w-8 h-8',
+    md: 'w-12 h-12',
+    lg: 'w-16 h-16',
+  };
 
-export function AvatarImage({ src, alt }) {
-  return <img src={src} alt={alt} className="w-full h-full object-cover" />;
-}
-
-export function AvatarFallback({ children }) {
   return (
-    <div className="w-full h-full flex items-center justify-center text-gray-500 font-semibold">
-      {children}
-    </div>
+    <img
+      src={src}
+      alt={alt}
+      className={`${sizeClasses[size]} rounded-full object-cover`}
+    />
   );
 }

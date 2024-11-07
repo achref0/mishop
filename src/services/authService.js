@@ -1,19 +1,25 @@
-// This is a mock implementation. Replace with actual API calls in a real application.
+import axios from 'axios';
 
-const users = [
-    { id: 1, name: 'Admin User', email: 'admin@example.com', password: 'admin123', isAdmin: true },
-  ];
-  
-  export async function signUp(name, email, password) {
-    const newUser = { id: users.length + 1, name, email, password, isAdmin: false };
-    users.push(newUser);
-    return { ...newUser, password: undefined };
-  }
-  
-  export async function login(email, password) {
-    const user = users.find(u => u.email === email && u.password === password);
-    if (user) {
-      return { ...user, password: undefined };
-    }
-    throw new Error('Invalid email or password');
-  }
+const API_URL = 'http://localhost:5000/api';
+
+export const login = async (email, password) => {
+  const response = await axios.post(`${API_URL}/users/login`, { email, password });
+  return response.data;
+};
+
+export const adminLogin = async (email, password) => {
+  const response = await axios.post(`${API_URL}/admin/login`, { email, password });
+  return response.data;
+};
+
+export const register = async (name, email, password) => {
+  const response = await axios.post(`${API_URL}/users/register`, { name, email, password });
+  return response.data;
+};
+
+export const getProfile = async (token) => {
+  const response = await axios.get(`${API_URL}/users/profile`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};

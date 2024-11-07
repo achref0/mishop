@@ -1,142 +1,147 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { getProducts, addProduct, deleteProduct } from '../services/productService';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/productService';
+import { Input } from '../components/ui/Input';
+import { Label } from '../components/ui/Label';
+import { Textarea } from '../components/ui/Textarea';
+import { Alert, AlertDescription } from '../components/ui/Alert';
 
-function AdminDashboardPage() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+export default function AdminDashboardPage() {
   const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', image: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '', image: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    if (!user || !user.isAdmin) {
-      // Redirect non-admin users
-      navigate('/');
-    } else {
-      fetchProducts();
-    }
-  }, [user, navigate]);
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
-    const fetchedProducts = await getProducts();
-    setProducts(fetchedProducts);
-  };
-
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
     try {
-      // Convert price to a number
-      const productWithNumberPrice = {
-        ...newProduct,
-        price: parseFloat(newProduct.price), // Convert price to a number
-      };
-
-      if (isNaN(productWithNumberPrice.price)) {
-        alert('Please enter a valid number for the price.');
-        return;
-      }
-
-      await addProduct(productWithNumberPrice);
-      setNewProduct({ name: '', price: '', description: '', image: '' });
-      fetchProducts();
-      alert('Product added successfully!');
-    } catch (error) {
-      alert('Failed to add product: ' + error.message);
+      const fetchedProducts = await getProducts();
+      setProducts(fetchedProducts);
+    } catch (err) {
+      setError('Failed to fetch products. Please try again.');
     }
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const handleCreateProduct = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
     try {
-      await deleteProduct(productId);
+      await createProduct(newProduct);
+      setNewProduct({ name: '', description: '', price: '', image: '' });
       fetchProducts();
-      alert('Product deleted successfully!');
-    } catch (error) {
-      alert('Failed to delete product: ' + error.message);
+      setSuccess('Product created successfully!');
+    } catch (err) {
+      setError('Failed to create product. Please try again.');
+    }
+  };
+
+  const handleUpdateProduct = async (id, updatedProduct) => {
+    setError('');
+    setSuccess('');
+    try {
+      await updateProduct(id, updatedProduct);
+      fetchProducts();
+      setSuccess('Product updated successfully!');
+    } catch (err) {
+      setError('Failed to update product. Please try again.');
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    setError('');
+    setSuccess('');
+    try {
+      await deleteProduct(id);
+      fetchProducts();
+      setSuccess('Product deleted successfully!');
+    } catch (err) {
+      setError('Failed to delete product. Please try again.');
     }
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">Admin Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Add New Product</h2>
-          <form onSubmit={handleAddProduct}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-700 dark:text-gray-300 mb-2">Name</label>
-              <input
-                type="text"
-                id="name"
-                value={newProduct.name}
-                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="price" className="block text-gray-700 dark:text-gray-300 mb-2">Price</label>
-              <input
-                type="text"
-                id="price"
-                value={newProduct.price}
-                onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
-              <textarea
-                id="description"
-                value={newProduct.description}
-                onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-                rows="3"
-                required
-              ></textarea>
-            </div>
-            <div className="mb-4">
-              <label htmlFor="image" className="block text-gray-700 dark:text-gray-300 mb-2">Image URL</label>
-              <input
-                type="text"
-                id="image"
-                value={newProduct.image}
-                onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg"
-            >
-              Add Product
-            </button>
-          </form>
-        </div>
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Manage Products</h2>
-          <ul className="space-y-4">
-            {products.map((product) => (
-              <li key={product.id} className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{product.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-300">${product.price.toFixed(2)}</p>
-                </div>
-                <button
-                  onClick={() => handleDeleteProduct(product.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg"
-                >
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="default" className="mb-4">
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+      <Card className="mb-8 p-6">
+        <h2 className="text-xl font-semibold mb-4">Add New Product</h2>
+        <form onSubmit={handleCreateProduct} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={newProduct.name}
+              onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={newProduct.description}
+              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="price">Price</Label>
+            <Input
+              type="number"
+              id="price"
+              value={newProduct.price}
+              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="image">Image URL</Label>
+            <Input
+              id="image"
+              value={newProduct.image}
+              onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+              required
+            />
+          </div>
+          <Button type="submit">Add Product</Button>
+        </form>
+      </Card>
+      <h2 className="text-2xl font-semibold mb-4">Product List</h2>
+      <div className="space-y-4">
+        {products.map((product) => (
+          <Card key={product.id} className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="text-gray-600">{product.description}</p>
+                <p className="text-gray-800 font-bold mt-2">${product.price.toFixed(2)}</p>
+              </div>
+              <div className="space-x-2">
+                <Button onClick={() => handleUpdateProduct(product.id, { ...product, price: product.price + 1 })}>
+                  Increase Price
+                </Button>
+                <Button variant="destructive" onClick={() => handleDeleteProduct(product.id)}>
                   Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
 }
-
-export default AdminDashboardPage;
